@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --neon-pink: #FF10F0;
+    --neon-glow: 0 0 25px rgba(255, 16, 240, 0.6), 0 0 50px rgba(255, 16, 240, 0.3);
+  }
+
+  body {
+    background-color: #050509;
+    color: #e4e4e7;
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+/* Glassmorphism Dark Cards */
+.glass-panel {
+  background: rgba(13, 13, 22, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 16, 240, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+.glass-panel-active {
+  background: rgba(255, 16, 240, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 16, 240, 0.4);
+  box-shadow: 0 0 25px rgba(255, 16, 240, 0.25);
+}
+
+/* Neon SOS Glowing Button Effects */
+.sos-button-glow {
+  background: radial-gradient(circle, #ff5cf4 0%, #FF10F0 45%, #ca00bb 100%);
+  box-shadow: 
+    0 0 25px #FF10F0,
+    0 0 50px rgba(255, 16, 240, 0.7),
+    0 0 90px rgba(255, 16, 240, 0.4),
+    inset 0 0 20px rgba(255, 255, 255, 0.4);
+}
+
+.sos-ring-1 {
+  border: 2px solid rgba(255, 16, 240, 0.6);
+  animation: sosPulseRing 2.4s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+}
+
+.sos-ring-2 {
+  border: 2px solid rgba(255, 16, 240, 0.4);
+  animation: sosPulseRing 2.4s cubic-bezier(0.215, 0.61, 0.355, 1) 0.8s infinite;
+}
+
+@keyframes sosPulseRing {
+  0% {
+    transform: scale(0.9);
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+
+/* Leaflet Map Dark Filter */
+.leaflet-container {
+  background: #09090e !important;
+  font-family: 'Outfit', sans-serif !important;
+  border-radius: 1rem;
+}
+
+.leaflet-tile {
+  filter: brightness(0.75) contrast(1.25) saturate(0.8) hue-rotate(290deg);
+}
+
+.leaflet-popup-content-wrapper {
+  background: rgba(13, 13, 22, 0.95) !important;
+  color: #ffffff !important;
+  border: 1px solid #FF10F0 !important;
+  box-shadow: 0 0 15px rgba(255, 16, 240, 0.4) !important;
+  border-radius: 12px !important;
+}
+
+.leaflet-popup-tip {
+  background: rgba(13, 13, 22, 0.95) !important;
+}
+
+/* Scrollbar Customization */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #050509;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 16, 240, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FF10F0;
+}

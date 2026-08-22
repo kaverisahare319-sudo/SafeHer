@@ -1,0 +1,18 @@
+{
+  "short_name": "SafeHer",
+  "name": "SafeHer - Women's Safety & Emergency SOS",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#050509",
+  "theme_color": "#FF10F0",
+  "display": "standalone",
+  "orientation": "portrait",
+  "description": "Personal safety, live location sharing, emergency contacts, and 1-tap SOS application for women."
+}

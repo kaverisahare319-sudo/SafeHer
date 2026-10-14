@@ -1,4 +1,6 @@
+// Never invent a location: if GPS is not available the message says so.
 export const createGoogleMapsUrl = (lat, lng) => {
+  if (lat == null || lng == null) return '(location not available)';
   return `https://www.google.com/maps?q=${lat},${lng}`;
 };
 

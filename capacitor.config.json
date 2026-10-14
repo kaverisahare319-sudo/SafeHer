@@ -1,0 +1,23 @@
+{
+  "appId": "com.safeher.app",
+  "appName": "SafeHer",
+  "webDir": "dist",
+  "backgroundColor": "#12142A",
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1200,
+      "backgroundColor": "#12142A",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#12142A"
+    }
+  }
+}

@@ -48,7 +48,6 @@ export function AuthScreen({ onLogin }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [idCard, setIdCard] = useState(null);
-  const [declaration, setDeclaration] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
   const [formError, setFormError] = useState('');
@@ -100,13 +99,11 @@ export function AuthScreen({ onLogin }) {
     if (!/^\+?[0-9 ]{10,15}$/.test(phone.trim())) er.phone = 'Enter a valid phone number.';
     if (password.length < 8) er.password = 'At least 8 characters.';
     if (password !== confirmPassword) er.confirm = 'Passwords do not match.';
-    if (!idCard) er.idCard = 'Upload a photo of your college ID card.';
-    if (!declaration) er.declaration = 'Please confirm to continue.';
     setErrors(er); if (Object.keys(er).length) return;
     call(async () => {
       const { ok, data } = await api('/api/auth/signup', {
         method: 'POST',
-        body: { name: name.trim(), email: email.trim(), phone: phone.trim(), password, idCardImage: idCard, declaration }
+        body: { name: name.trim(), email: email.trim(), phone: phone.trim(), password, idCardImage: idCard }
       });
       if (ok) { setDevOtp(data.devOtp || ''); go('verify'); setInfo(`We emailed a 6-digit code to ${email.trim()}.`); }
       else setFormError(data.message || 'Signup failed. Please try again.');
@@ -118,8 +115,10 @@ export function AuthScreen({ onLogin }) {
     call(async () => {
       const { ok, data } = await api('/api/auth/verify-email', { method: 'POST', body: { email: email.trim(), otp: otp.trim() } });
       if (ok) {
-        setStatusScreen({ kind: 'pending', text: 'Email verified. The admin will check your college ID card and approve your account. Please try signing in later.' });
-        go('status');
+        setPassword('');
+        setOtp('');
+        go('signin');
+        setInfo('Email verified! You can now sign in.');
       } else setFormError(data.message || 'Could not verify.');
     });
   };
@@ -151,7 +150,7 @@ export function AuthScreen({ onLogin }) {
 
   const titles = {
     signin: ['Welcome back', 'Sign in to your campus safety circle.'],
-    signup: ['Join SafeHer', `Only for female students of ${COLLEGE_NAME}. Your ID card is checked by the admin.`],
+    signup: ['Join SafeHer', `Only for female students of ${COLLEGE_NAME}.`],
     verify: ['Verify your email', 'Enter the code we sent to your email.'],
     forgot: ['Forgot password', 'We will email you a reset code.'],
     reset: ['Reset password', 'Enter the code and choose a new password.'],
@@ -263,21 +262,16 @@ export function AuthScreen({ onLogin }) {
                     <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Re-enter password" autoComplete="new-password" className={inputCls(errors.confirm)} />
                   </Field>
 
-                  <Field label="College ID card photo" error={errors.idCard}>
+                  <Field label="College ID card photo (Optional)" error={errors.idCard}>
                     <label className={`flex items-center gap-3 p-3 rounded-xl border border-dashed cursor-pointer ${errors.idCard ? 'border-[#FF5D73]' : 'border-[#3B3F72] hover:border-[#FF5D73]'} bg-[#0D0E20]`}>
                       {idCard ? <img src={idCard} alt="ID preview" className="w-16 h-11 object-cover rounded-md" /> : <Upload className="w-5 h-5 text-[#9491B4]" />}
-                      <span className="text-xs text-[#9491B4]">{idCard ? 'Tap to change photo' : 'Tap to upload a clear photo of your ID card'}</span>
+                      <span className="text-xs text-[#9491B4]">{idCard ? 'Tap to change photo' : 'Tap to upload ID card photo (optional)'}</span>
                       <input type="file" accept="image/*" capture="environment" onChange={pickFile} className="hidden" />
                     </label>
-                    <p className="text-[11px] text-[#635F87] mt-1.5">Only the admin sees it, only to verify you. It is deleted right after approval or rejection.</p>
+                    <p className="text-[11px] text-[#635F87] mt-1.5">Optional college ID verification document.</p>
                   </Field>
 
-                  <label className="flex items-start gap-2 text-xs text-[#9491B4] mb-4 cursor-pointer">
-                    <input type="checkbox" checked={declaration} onChange={e => setDeclaration(e.target.checked)} className="mt-0.5 w-4 h-4 accent-[#FF5D73]" />
-                    <span>I confirm that I am a female student of {COLLEGE_NAME} and the details I gave are true. Fake accounts will be blocked.</span>
-                  </label>
-                  {errors.declaration && <div className="text-xs text-[#FF5D73] -mt-3 mb-3">{errors.declaration}</div>}
-                </>
+                                  </>
               )}
 
               {mode === 'signin' && (

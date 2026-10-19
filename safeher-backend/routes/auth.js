@@ -60,7 +60,7 @@ const signToken = (u) => jwt.sign({ userId: String(u._id), role: u.role || 'user
 // POST /api/auth/signup  -> account is created as pending; email OTP sent; admin must approve ID card
 router.post('/signup', async (req, res) => {
   try {
-    const { name, phone, password, idCardImage, declaration } = req.body;
+    const { name, phone, password, idCardImage } = req.body;
     const email = cleanEmail(req.body.email);
 
     if (!name || !email || !phone || !password) {
@@ -70,11 +70,14 @@ router.post('/signup', async (req, res) => {
     if (!allowedDomain(email)) return res.status(400).json({ message: 'Please use your college email address.' });
     if (!/^\+?[0-9 ]{10,15}$/.test(String(phone).trim())) return res.status(400).json({ message: 'Enter a valid phone number.' });
     if (String(password).length < 8) return res.status(400).json({ message: 'Password must be at least 8 characters.' });
-    if (declaration !== true) return res.status(400).json({ message: 'Please confirm that you are a female student of this college.' });
-    if (!/^data:image\/(jpeg|png|webp);base64,/.test(String(idCardImage || ''))) {
-      return res.status(400).json({ message: 'Upload a photo of your college ID card.' });
+        if (idCardImage) {
+      if (!/^data:image\/(jpeg|png|webp);base64,/.test(String(idCardImage))) {
+        return res.status(400).json({ message: 'Upload a valid photo of your college ID card (JPG/PNG).' });
+      }
+      if (idCardImage.length > MAX_ID_CARD_CHARS) {
+        return res.status(400).json({ message: 'ID card image is too large (max ~1.8 MB).' });
+      }
     }
-    if (idCardImage.length > MAX_ID_CARD_CHARS) return res.status(400).json({ message: 'ID card image is too large (max ~1.8 MB).' });
 
     let user = await userStore.findByEmail(email);
     const hashed = await bcrypt.hash(password, 10);
@@ -82,13 +85,13 @@ router.post('/signup', async (req, res) => {
     if (user) {
       if (user.emailVerified) return res.status(409).json({ message: 'An account with this email already exists.' });
       // Unverified earlier attempt: let her retry with fresh details.
-      Object.assign(user, { name: name.trim(), phone: String(phone).trim(), password: hashed, idCardImage, college: process.env.COLLEGE_NAME });
+      Object.assign(user, { name: name.trim(), phone: String(phone).trim(), password: hashed, idCardImage: idCardImage || null, college: process.env.COLLEGE_NAME });
       await userStore.save(user);
     } else {
       user = await userStore.create({
         name: name.trim(), email, phone: String(phone).trim(), password: hashed,
-        college: process.env.COLLEGE_NAME || 'College', role: 'user', status: 'pending',
-        emailVerified: false, idCardImage
+        college: process.env.COLLEGE_NAME || 'College', role: 'user', status: 'approved',
+        emailVerified: false, idCardImage: idCardImage || null
       });
     }
 
@@ -109,7 +112,7 @@ router.post('/verify-email', async (req, res) => {
     if (err) return res.status(400).json({ message: err });
     user.emailVerified = true;
     await userStore.save(user);
-    res.json({ message: 'Email verified. Your college ID is now waiting for admin approval.', status: user.status });
+    res.json({ message: 'Email verified. You can now sign in.', status: user.status });
   } catch (e) {
     console.error('Verify error:', e);
     res.status(500).json({ message: 'Something went wrong. Try again.' });
@@ -143,11 +146,12 @@ router.post('/login', async (req, res) => {
       if (!user.emailVerified) {
         return res.status(403).json({ code: 'EMAIL_NOT_VERIFIED', message: 'Please verify your email first.', email });
       }
-      if (user.status === 'pending') {
-        return res.status(403).json({ code: 'PENDING_APPROVAL', message: 'Your college ID is being checked by the admin. You will be able to sign in once approved.' });
-      }
       if (user.status === 'rejected') {
         return res.status(403).json({ code: 'REJECTED', message: user.rejectReason ? `Your registration was rejected: ${user.rejectReason}` : 'Your registration was rejected by the admin.' });
+      }
+      if (user.status === 'pending') {
+        user.status = 'approved';
+        await userStore.save(user);
       }
     }
     res.json({ token: signToken(user), user: publicUser(user) });

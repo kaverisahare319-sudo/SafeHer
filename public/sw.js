@@ -1,4 +1,4 @@
-const CACHE_NAME = 'safeher-v1';
+const CACHE_NAME = 'safeher-v2';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -31,7 +31,12 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Network first strategy with offline fallback
+  // Never intercept or cache API requests or non-GET methods
+  if (event.request.method !== 'GET' || event.request.url.includes('/api/')) {
+    return;
+  }
+
+  // Network first strategy with offline fallback for static assets
   event.respondWith(
     fetch(event.request).catch(() => {
       return caches.match(event.request);

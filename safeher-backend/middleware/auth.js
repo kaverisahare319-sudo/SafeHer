@@ -11,7 +11,13 @@ async function requireAuth(req, res, next) {
     const decoded = jwt.verify(header.split(' ')[1], process.env.JWT_SECRET);
     const user = await userStore.findById(decoded.userId);
     if (!user) return res.status(401).json({ message: 'Account not found. Please sign in again.' });
-    if (user.status !== 'approved') return res.status(403).json({ message: 'Your account is not approved.' });
+    if (user.status === 'rejected') {
+      return res.status(403).json({ message: user.rejectReason ? `Account blocked: ${user.rejectReason}` : 'Your account has been blocked by the admin.' });
+    }
+    if (user.status === 'pending') {
+      user.status = 'approved';
+      await userStore.save(user);
+    }
     req.userId = String(user._id);
     req.userRole = user.role || 'user';
     next();
